@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SolarLab.BusManager.Implementation", "SolarLab.BusManager.Implementation\SolarLab.BusManager.Implementation.csproj", "{58118534-36FE-471D-B234-004D99D3F810}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SolarLab.BusManager.Implementation.UnitTests", "SolarLab.BusManager.Implementation.UnitTests\SolarLab.BusManager.Implementation.UnitTests.csproj", "{F8D6ECA9-B9FB-44E7-94FB-24076932885B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{58118534-36FE-471D-B234-004D99D3F810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58118534-36FE-471D-B234-004D99D3F810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58118534-36FE-471D-B234-004D99D3F810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58118534-36FE-471D-B234-004D99D3F810}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8D6ECA9-B9FB-44E7-94FB-24076932885B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8D6ECA9-B9FB-44E7-94FB-24076932885B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8D6ECA9-B9FB-44E7-94FB-24076932885B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8D6ECA9-B9FB-44E7-94FB-24076932885B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E9A3EE14-E0D6-4E51-9162-895D368CFA05}
+	EndGlobalSection
+EndGlobal
