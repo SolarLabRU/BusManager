@@ -218,10 +218,11 @@ namespace SolarLab.BusManager.Implementation
         {
             var settings = new BusConnectionSettings
             {
-                UserName = configuration["RabbitMQConfig:RabbitUserName"],
-                UserPassword = configuration["RabbitMQConfig:RabbitUserPassword"]
+                UserName = GetSettingsFromConfig("RabbitMQConfig","RabbitUserName"),
+                UserPassword = GetSettingsFromConfig("RabbitMQConfig", "RabbitUserPassword")
             };
-            var adr = configuration["RabbitMQConfig:RabbitAddress"];
+
+            var adr = GetSettingsFromConfig("RabbitMQConfig", "RabbitAddress");
             var addresses = adr.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
             if (addresses == null || addresses.Count < 1)
             {
@@ -229,21 +230,21 @@ namespace SolarLab.BusManager.Implementation
             }
             settings.NodesAddresses = addresses;
 
-            var rabbitClusterAddress = configuration["RabbitMQConfig:RabbitClusterAddress"];
+            var rabbitClusterAddress = GetSettingsFromConfig("RabbitMQConfig", "RabbitClusterAddress");
             if (string.IsNullOrEmpty(rabbitClusterAddress))
             {
                 rabbitClusterAddress = settings.NodesAddresses[0];
             }
             settings.RabbitClusterAddress = rabbitClusterAddress;
 
-            var useInMemorySchedulerFromConfig = configuration["RabbitMQConfig:UseInMemoryScheduler"];
+            var useInMemorySchedulerFromConfig = GetSettingsFromConfig("RabbitMQConfig", "UseInMemoryScheduler");
             if (!bool.TryParse(useInMemorySchedulerFromConfig, out var useInMemoryScheduler))
             {
                 useInMemoryScheduler = true;
             }
             settings.UseInMemoryScheduler = useInMemoryScheduler;
 
-            var scheduleMessageQueueName = configuration["RabbitMQConfig:ScheduleMessageQueueName"];
+            var scheduleMessageQueueName = GetSettingsFromConfig("RabbitMQConfig", "ScheduleMessageQueueName");
             if (string.IsNullOrEmpty(scheduleMessageQueueName))
             {
                 scheduleMessageQueueName = "quartz.ScheduleMessage";
@@ -251,6 +252,17 @@ namespace SolarLab.BusManager.Implementation
             settings.ScheduleMessageQueueName = scheduleMessageQueueName;
 
             return settings;
+
+            string GetSettingsFromConfig(string settingNameFirst, string settingNameSecond)
+            {
+                var result = configuration[$"{settingNameFirst}:{settingNameSecond}"];
+                if (string.IsNullOrEmpty(result))
+                {
+                    result = configuration[$"{settingNameFirst}_{settingNameSecond}"];
+                }
+
+                return result;
+            }
         }
 
         #endregion Implementation IBusManager
