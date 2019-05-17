@@ -145,6 +145,22 @@ namespace SolarLab.BusManager.Implementation
             var scheduledMessage = await _bus.SchedulePublish(schedulerEndpoint, scheduledTime, eventModel);
             return scheduledMessage.TokenId;
         }
+        
+        /// <summary>
+        /// Создает отложенное сообщение в шину
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события в шине</typeparam>
+        /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
+        /// <param name="eventModel">модель для посылки сообщения в шину</param>
+        /// <returns>Возвращает токен запланированного сообщения</returns>
+        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class
+        {
+            InitBusAndThrowOnError();
+
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{((IWithQueueName)eventModel).QueueName}");
+            var scheduledMessage = await _bus.ScheduleSend(destinationAddress, scheduledTime, eventModel);
+            return scheduledMessage.TokenId;
+        }
 
         /// <summary>
         /// Отменяет запланированное сообщение
