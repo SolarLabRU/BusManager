@@ -40,6 +40,15 @@ namespace SolarLab.BusManager.Abstraction
         /// <param name="eventModel">модель для посылки сообщения в шину</param>
         /// <returns>Возвращает токен запланированного сообщения</returns>
         Task<Guid> SchedulePublish<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class;
+        
+        /// <summary>
+        /// Создает отложенное сообщение в шину
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события в шине</typeparam>
+        /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
+        /// <param name="eventModel">модель для посылки сообщения в шину</param>
+        /// <returns>Возвращает токен запланированного сообщения</returns>
+        Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class;
 
         /// <summary>
         /// Отменяет запланированное сообщение
