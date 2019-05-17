@@ -48,7 +48,7 @@ namespace SolarLab.BusManager.Abstraction
         /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
         /// <param name="eventModel">модель для посылки сообщения в шину</param>
         /// <returns>Возвращает токен запланированного сообщения</returns>
-        Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class;
+        Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName;
 
         /// <summary>
         /// Отменяет запланированное сообщение
