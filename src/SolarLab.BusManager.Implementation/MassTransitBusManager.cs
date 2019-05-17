@@ -153,7 +153,7 @@ namespace SolarLab.BusManager.Implementation
         /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
         /// <param name="eventModel">модель для посылки сообщения в шину</param>
         /// <returns>Возвращает токен запланированного сообщения</returns>
-        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class
+        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName 
         {
             InitBusAndThrowOnError();
 
