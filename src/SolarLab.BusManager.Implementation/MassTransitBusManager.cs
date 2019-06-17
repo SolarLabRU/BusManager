@@ -180,7 +180,7 @@ namespace SolarLab.BusManager.Implementation
         /// <typeparam name="TResponse">тип ответа</typeparam>
         /// <param name="request">запрос</param>
         /// <returns>Task</returns>
-        public Task<TResponse> Request<TRequest, TResponse>(TRequest request) where TRequest : class, IWithQueueName where TResponse : class
+        public virtual Task<TResponse> Request<TRequest, TResponse>(TRequest request) where TRequest : class, IWithQueueName where TResponse : class
         {
             return Request<TRequest, TResponse>(request, 30);
         }
