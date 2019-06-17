@@ -180,7 +180,7 @@ namespace SolarLab.BusManager.Implementation
         /// <typeparam name="TResponse">тип ответа</typeparam>
         /// <param name="request">запрос</param>
         /// <returns>Task</returns>
-        public Task<TResponse> Request<TRequest, TResponse>(TRequest request) where TRequest : class, IWithQueueName where TResponse : class
+        public virtual Task<TResponse> Request<TRequest, TResponse>(TRequest request) where TRequest : class, IWithQueueName where TResponse : class
         {
             return Request<TRequest, TResponse>(request, 30);
         }
@@ -194,7 +194,7 @@ namespace SolarLab.BusManager.Implementation
         /// <param name="requestTimeOutInSeconds">тайм-аут запроса в секундах</param>
         /// <param name="ignoreTimeoutException">Нужно ли игнорировать ошибку тайм аута. Если игнорируем, то возвращаем null</param>
         /// <returns>Task</returns>
-        public async Task<TResponse> Request<TRequest, TResponse>(TRequest request, double requestTimeOutInSeconds, bool ignoreTimeoutException = false) where TRequest : class, IWithQueueName where TResponse : class
+        public virtual async Task<TResponse> Request<TRequest, TResponse>(TRequest request, double requestTimeOutInSeconds, bool ignoreTimeoutException = false) where TRequest : class, IWithQueueName where TResponse : class
         {
             CheckForNull(request);
 
