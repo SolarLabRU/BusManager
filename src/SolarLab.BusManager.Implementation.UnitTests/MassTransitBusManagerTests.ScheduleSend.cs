@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
+using MassTransit.RabbitMqTransport;
+using MassTransit.Scheduling;
+using Moq;
 using Xunit;
 
 namespace SolarLab.BusManager.Implementation.UnitTests
@@ -35,6 +40,25 @@ namespace SolarLab.BusManager.Implementation.UnitTests
             Assert.NotNull(exception);
             Assert.IsType<Exception>(exception);
             Assert.Equal(ErrorMessages.BusConnectionSettingsIsEmpty, exception.Message);
+        }
+
+        [Fact]
+        public async Task ScheduleSendCorrectCallPassesParametersToBusClient()
+        {
+            var scheduledTime = DateTime.Now;
+
+            _managerWithSettableBus.StartBus(new Dictionary<string, Action<IRabbitMqReceiveEndpointConfigurator>>(), new BusConnectionSettings());
+            await _managerWithSettableBus.ScheduleSend(scheduledTime, new WithQueueName { QueueName = "notNullQueueName" });
+
+            _busControlMock.Verify(x => x.Publish(It.IsAny<ScheduleMessage<WithQueueName>>(), 
+                It.IsAny<ScheduleMessageContextPipe<WithQueueName>>(),
+                It.IsAny<CancellationToken>()), Times.Once);
+
+            _busControlMock.Verify(x =>
+                x.Publish(
+                    It.Is<ScheduleMessage<WithQueueName>>(y => y.ScheduledTime == scheduledTime.ToUniversalTime()),
+                    It.IsAny<ScheduleMessageContextPipe<WithQueueName>>(),
+                    It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

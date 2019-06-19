@@ -1,5 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Policy;
+using System.Threading;
 using System.Threading.Tasks;
+using MassTransit;
+using MassTransit.RabbitMqTransport;
+using MassTransit.Scheduling;
+using Moq;
+using SolarLab.Common.Contracts;
 using Xunit;
 
 namespace SolarLab.BusManager.Implementation.UnitTests
@@ -37,6 +45,31 @@ namespace SolarLab.BusManager.Implementation.UnitTests
             Assert.NotNull(exception);
             Assert.IsType<Exception>(exception);
             Assert.Equal(ErrorMessages.BusConnectionSettingsIsEmpty, exception.Message);
+        }
+
+        [Theory]
+        [InlineData("testScheduleId", "testScheduleGroup", "0 1 0 0 * * ? *")]
+        public async Task ScheduleRecurringSendCorrectCallPassesParametersToBusClient(string scheduleId, string scheduleGroup, string cronExpression)
+        {
+            _managerWithSettableBus.StartBus(new Dictionary<string, Action<IRabbitMqReceiveEndpointConfigurator>>(), new BusConnectionSettings());
+            await _managerWithSettableBus.ScheduleRecurringSend(scheduleId, scheduleGroup, cronExpression,
+                new WithQueueName {QueueName = "notNullQueueName"});
+
+            _busControlMock.Verify(x =>
+                x.Publish(
+                    It.Is<ScheduleRecurringMessage<WithQueueName>>(y =>
+                        VerifyRecurringSchedule(y.Schedule, scheduleId, scheduleGroup, cronExpression)),
+                    It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        private bool VerifyRecurringSchedule(RecurringSchedule recurringSchedule, string expectedScheduleId, string expectedScheduleGroup, string expectedCronExpression)
+        {
+            Assert.NotNull(recurringSchedule);
+            Assert.Equal(expectedScheduleId, recurringSchedule.ScheduleId);
+            Assert.Equal(expectedScheduleGroup, recurringSchedule.ScheduleGroup);
+            Assert.Equal(expectedCronExpression, recurringSchedule.CronExpression);
+
+            return true;
         }
     }
 }
