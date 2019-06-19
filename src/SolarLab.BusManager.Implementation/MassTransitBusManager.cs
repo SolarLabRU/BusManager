@@ -163,6 +163,24 @@ namespace SolarLab.BusManager.Implementation
         }
 
         /// <summary>
+        /// Создаёт отложенное повторяющееся сообщение в шину
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события в шине</typeparam>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        /// <param name="cronExpression">Выражение для настройки планировщика задач</param>
+        /// <param name="eventModel">модель для посылки сообщения в шину</param>
+        /// <returns>Task</returns>
+        public async Task ScheduleRecurringSend<TEvent>(string scheduleId, string scheduleGroup, string cronExpression, TEvent eventModel) where TEvent : class, IWithQueueName
+        {
+            InitBusAndThrowOnError();
+
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{((IWithQueueName)eventModel).QueueName}");
+            var recurringSchedule = new RecurringScheduleWithImplicitScheduleId(scheduleId, scheduleGroup, cronExpression);
+            await _bus.ScheduleRecurringSend(destinationAddress, recurringSchedule, eventModel);
+        }
+
+        /// <summary>
         /// Отменяет запланированное сообщение
         /// </summary>
         /// <param name="tokenId">Токен запланированного сообщения</param>
@@ -171,6 +189,18 @@ namespace SolarLab.BusManager.Implementation
             InitBusAndThrowOnError();
 
             return _bus.CancelScheduledSend(tokenId);
+        }
+
+        /// <summary>
+        /// Отменяет запланированное повторяющееся сообщение
+        /// </summary>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        public Task CancelScheduledRecurringSend(string scheduleId, string scheduleGroup)
+        {
+            InitBusAndThrowOnError();
+
+            return _bus.CancelScheduledRecurringSend(scheduleId, scheduleGroup);
         }
 
         /// <summary>
