@@ -153,11 +153,15 @@ namespace SolarLab.BusManager.Implementation
         /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
         /// <param name="eventModel">модель для посылки сообщения в шину</param>
         /// <returns>Возвращает токен запланированного сообщения</returns>
-        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName 
+        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName
         {
+            CheckForNull(eventModel);
+
+            var queueName = GetQueueNameOrThrow(eventModel);
+
             InitBusAndThrowOnError();
 
-            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{((IWithQueueName)eventModel).QueueName}");
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{queueName}");
             var scheduledMessage = await _bus.ScheduleSend(destinationAddress, scheduledTime, eventModel);
             return scheduledMessage.TokenId;
         }
@@ -173,9 +177,13 @@ namespace SolarLab.BusManager.Implementation
         /// <returns>Task</returns>
         public async Task ScheduleRecurringSend<TEvent>(string scheduleId, string scheduleGroup, string cronExpression, TEvent eventModel) where TEvent : class, IWithQueueName
         {
+            CheckForNull(eventModel);
+
+            var queueName = GetQueueNameOrThrow(eventModel);
+
             InitBusAndThrowOnError();
 
-            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{((IWithQueueName)eventModel).QueueName}");
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{queueName}");
             var recurringSchedule = new RecurringScheduleWithImplicitScheduleId(scheduleId, scheduleGroup, cronExpression);
             await _bus.ScheduleRecurringSend(destinationAddress, recurringSchedule, eventModel);
         }
