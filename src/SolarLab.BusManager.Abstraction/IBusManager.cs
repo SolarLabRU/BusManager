@@ -57,6 +57,24 @@ namespace SolarLab.BusManager.Abstraction
         Task CancelSchedulePublish(Guid tokenId);
 
         /// <summary>
+        /// Создаёт отложенное повторяющееся сообщение в шину
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события в шине</typeparam>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        /// <param name="cronExpression">Выражение для настройки планировщика задач</param>
+        /// <param name="eventModel">модель для посылки сообщения в шину</param>
+        /// <returns></returns>
+        Task ScheduleRecurringSend<TEvent>(string scheduleId, string scheduleGroup, string cronExpression, TEvent eventModel) where TEvent : class, IWithQueueName;
+
+        /// <summary>
+        /// Отменяет запланированное повторяющееся сообщение
+        /// </summary>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        Task CancelScheduledRecurringSend(string scheduleId, string scheduleGroup);
+
+        /// <summary>
         /// Послать сообщение в очередь
         /// </summary>
         /// <typeparam name="T">тип сообщения</typeparam>
