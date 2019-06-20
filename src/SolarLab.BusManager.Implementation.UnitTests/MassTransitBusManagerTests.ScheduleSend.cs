@@ -1,10 +1,10 @@
-﻿using System;
+﻿using MassTransit.RabbitMqTransport;
+using MassTransit.Scheduling;
+using Moq;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MassTransit.RabbitMqTransport;
-using MassTransit.Scheduling;
-using Moq;
 using Xunit;
 
 namespace SolarLab.BusManager.Implementation.UnitTests

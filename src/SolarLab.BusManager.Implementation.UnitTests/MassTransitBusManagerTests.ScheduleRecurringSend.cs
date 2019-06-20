@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Security.Policy;
-using System.Threading;
-using System.Threading.Tasks;
-using MassTransit;
-using MassTransit.RabbitMqTransport;
+﻿using MassTransit.RabbitMqTransport;
 using MassTransit.Scheduling;
 using Moq;
-using SolarLab.Common.Contracts;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SolarLab.BusManager.Implementation.UnitTests

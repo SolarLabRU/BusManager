@@ -10,18 +10,6 @@ namespace SolarLab.BusManager.Implementation.UnitTests
 {
     public partial class MassTransitBusManagerTests
     {
-        public class MassTransitBusManagerWithSettableBus : MassTransitBusManager
-        {
-            public MassTransitBusManagerWithSettableBus(IConfigurationRoot applicationConfiguration) : base(applicationConfiguration)
-            {
-            }
-
-            public void SetBusControl(IBusControl bus)
-            {
-                Bus = bus;
-            }
-        }
-
         private readonly Mock<IConfigurationRoot> _configurationRootMock = new Mock<IConfigurationRoot>();
         private readonly Mock<IBusControl> _busControlMock = new Mock<IBusControl>();
         private readonly MassTransitBusManager _manager;
