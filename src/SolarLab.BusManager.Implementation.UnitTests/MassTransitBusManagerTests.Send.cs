@@ -1,24 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using SolarLab.Common.Contracts;
 using Xunit;
 
 namespace SolarLab.BusManager.Implementation.UnitTests
 {
     public partial class MassTransitBusManagerTests
     {
-        public class WithQueueName : IWithQueueName
-        {
-            [JetBrains.Annotations.UsedImplicitly]
-            public string QueueName { get; set; }
-            [JetBrains.Annotations.UsedImplicitly]
-            public string Name2 { get; }
-            [JetBrains.Annotations.UsedImplicitly]
-            string Name3 { get; }
-            [JetBrains.Annotations.UsedImplicitly]
-            int Name4 { get; }
-        }
-
         [Fact]
         public async Task SendShouldThrowExceptionWhenMessageNull()
         {

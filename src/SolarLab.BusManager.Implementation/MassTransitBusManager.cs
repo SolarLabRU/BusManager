@@ -22,7 +22,7 @@ namespace SolarLab.BusManager.Implementation
         /// <summary>
         /// Контрол шины данных
         /// </summary>
-        private IBusControl _bus;
+        protected IBusControl Bus;
 
         /// <summary>
         /// Конфигурация приложения
@@ -93,7 +93,7 @@ namespace SolarLab.BusManager.Implementation
         /// </summary>
         public void StopBus()
         {
-            _bus?.Stop();
+            Bus?.Stop();
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace SolarLab.BusManager.Implementation
         {
             CheckForNull(eventModel);
             InitBusAndThrowOnError();
-            await _bus.Publish(eventModel);
+            await Bus.Publish(eventModel);
         }
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace SolarLab.BusManager.Implementation
 
             InitBusAndThrowOnError();
 
-            var sendEndpoint = await _bus.GetSendEndpoint(ComposeUri(queueName));
+            var sendEndpoint = await Bus.GetSendEndpoint(ComposeUri(queueName));
             if (sendEndpoint == null)
             {
                 throw new Exception($"Не удалось найти очередь {queueName}");
@@ -141,8 +141,8 @@ namespace SolarLab.BusManager.Implementation
         {
             InitBusAndThrowOnError();
 
-            var schedulerEndpoint = await _bus.GetSendEndpoint(_schedulerAddress);
-            var scheduledMessage = await _bus.SchedulePublish(schedulerEndpoint, scheduledTime, eventModel);
+            var schedulerEndpoint = await Bus.GetSendEndpoint(_schedulerAddress);
+            var scheduledMessage = await Bus.SchedulePublish(schedulerEndpoint, scheduledTime, eventModel);
             return scheduledMessage.TokenId;
         }
         
@@ -153,13 +153,39 @@ namespace SolarLab.BusManager.Implementation
         /// <param name="scheduledTime">Запланированное время отправки сообщения</param>
         /// <param name="eventModel">модель для посылки сообщения в шину</param>
         /// <returns>Возвращает токен запланированного сообщения</returns>
-        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName 
+        public async Task<Guid> ScheduleSend<TEvent>(DateTime scheduledTime, TEvent eventModel) where TEvent : class, IWithQueueName
         {
+            CheckForNull(eventModel);
+
+            var queueName = GetQueueNameOrThrow(eventModel);
+
             InitBusAndThrowOnError();
 
-            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{((IWithQueueName)eventModel).QueueName}");
-            var scheduledMessage = await _bus.ScheduleSend(destinationAddress, scheduledTime, eventModel);
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{queueName}");
+            var scheduledMessage = await Bus.ScheduleSend(destinationAddress, scheduledTime, eventModel);
             return scheduledMessage.TokenId;
+        }
+
+        /// <summary>
+        /// Создаёт отложенное повторяющееся сообщение в шину
+        /// </summary>
+        /// <typeparam name="TEvent">Тип события в шине</typeparam>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        /// <param name="cronExpression">Выражение для настройки планировщика задач</param>
+        /// <param name="eventModel">модель для посылки сообщения в шину</param>
+        /// <returns>Task</returns>
+        public async Task ScheduleRecurringSend<TEvent>(string scheduleId, string scheduleGroup, string cronExpression, TEvent eventModel) where TEvent : class, IWithQueueName
+        {
+            CheckForNull(eventModel);
+
+            var queueName = GetQueueNameOrThrow(eventModel);
+
+            InitBusAndThrowOnError();
+
+            var destinationAddress = new Uri($"rabbitmq://{_settings.RabbitClusterAddress}/{queueName}");
+            var recurringSchedule = new RecurringScheduleWithImplicitScheduleId(scheduleId, scheduleGroup, cronExpression);
+            await Bus.ScheduleRecurringSend(destinationAddress, recurringSchedule, eventModel);
         }
 
         /// <summary>
@@ -170,7 +196,19 @@ namespace SolarLab.BusManager.Implementation
         {
             InitBusAndThrowOnError();
 
-            return _bus.CancelScheduledSend(tokenId);
+            return Bus.CancelScheduledSend(tokenId);
+        }
+
+        /// <summary>
+        /// Отменяет запланированное повторяющееся сообщение
+        /// </summary>
+        /// <param name="scheduleId">Идентификатор запланированной задачи</param>
+        /// <param name="scheduleGroup">Имя группы для запланированной задачи</param>
+        public Task CancelScheduledRecurringSend(string scheduleId, string scheduleGroup)
+        {
+            InitBusAndThrowOnError();
+
+            return Bus.CancelScheduledRecurringSend(scheduleId, scheduleGroup);
         }
 
         /// <summary>
@@ -210,7 +248,7 @@ namespace SolarLab.BusManager.Implementation
             var address = ComposeUri(queueName);
             var requestTimeout = TimeSpan.FromSeconds(requestTimeOutInSeconds);
 
-            var client = new MessageRequestClient<TRequest, TResponse>(_bus, address, requestTimeout);
+            var client = new MessageRequestClient<TRequest, TResponse>(Bus, address, requestTimeout);
             try
             {
                 return await client.Request(request, CancellationToken.None);
@@ -313,7 +351,7 @@ namespace SolarLab.BusManager.Implementation
             {
                 throw new Exception(ErrorMessages.BusNotInitialized);
             }
-            if (_bus == null)
+            if (Bus == null)
             {
                 throw new Exception(ErrorMessages.BusNotInitialized);
             }
@@ -324,26 +362,26 @@ namespace SolarLab.BusManager.Implementation
             lock (_locker)
             {
                 // If bus not configured - then exit
-                if (_bus != null)
+                if (Bus != null)
                 {
                     return true;
                 }
 
-                _bus = ConfigureBus();
+                Bus = ConfigureBus();
                 try
                 {
-                    _bus.StartAsync().Wait();
+                    Bus.StartAsync().Wait();
                     return true;
                 }
                 catch (RabbitMqConnectionException)
                 {
-                    _bus = null;
+                    Bus = null;
                     //Error connect to RabbitMq
                     return false;
                 }
                 catch (Exception)
                 {
-                    _bus = null;
+                    Bus = null;
                     //Critical error connect to RabbitMq
                     return false;
                 }
@@ -366,7 +404,7 @@ namespace SolarLab.BusManager.Implementation
         /// <returns>IBusControl</returns>
         private IBusControl ConfigureBus()
         {
-            return Bus.Factory.CreateUsingRabbitMq(cfg =>
+            return MassTransit.Bus.Factory.CreateUsingRabbitMq(cfg =>
             {
                 var host = cfg.Host(new Uri("rabbitmq://" + _settings.RabbitClusterAddress), h =>
                 {
